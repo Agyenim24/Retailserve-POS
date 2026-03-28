@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --surface: #f8fafc;
+    --surface-card: #ffffff;
+    --surface-elevated: #f1f5f9;
+    --text-main: #0f172a;
+  }
+  
+  .dark {
+    --surface: #0f172a;
+    --surface-card: #1e293b;
+    --surface-elevated: #334155;
+    --text-main: #f1f5f9;
+  }
+
+  * { box-sizing: border-box; }
+  
+  body {
+    background-color: var(--surface);
+    color: var(--text-main);
+    @apply font-sans antialiased transition-colors duration-200;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background-color: var(--surface-card);
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-slate-400 dark:bg-slate-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-slate-500 dark:bg-slate-500;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 active:bg-primary-800 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-primary-900/10 dark:shadow-primary-900/30 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-surface-card;
+
+  }
+  .btn-secondary {
+    @apply bg-surface-elevated hover:bg-slate-200 dark:hover:bg-slate-500 text-slate-800 dark:text-slate-100 font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 border border-slate-300 dark:border-slate-600 disabled:opacity-50 focus:outline-none;
+  }
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-red-900/10 dark:shadow-red-900/30 disabled:opacity-50 focus:outline-none;
+  }
+  .btn-success {
+    @apply bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2.5 rounded-xl transition-all duration-200 shadow-lg shadow-emerald-900/10 dark:shadow-emerald-900/30 disabled:opacity-50 focus:outline-none;
+  }
+  .card {
+    @apply bg-surface-card rounded-2xl border border-slate-200 dark:border-slate-700/50 shadow-xl;
+  }
+  .input {
+    @apply w-full bg-surface-elevated border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 focus:outline-none focus:border-primary-500 focus:ring-2 focus:ring-primary-500/20 transition placeholder-slate-400 dark:placeholder-slate-500;
+  }
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold;
+  }
+  .badge-green  { @apply badge bg-emerald-900/50 text-emerald-400 border border-emerald-800; }
+  .badge-red    { @apply badge bg-red-900/50 text-red-400 border border-red-800; }
+  .badge-yellow { @apply badge bg-amber-900/50 text-amber-400 border border-amber-800; }
+  .badge-blue   { @apply badge bg-blue-900/50 text-blue-400 border border-blue-800; }
+  .badge-purple { @apply badge bg-purple-900/50 text-purple-400 border border-purple-800; }
+}
+
+/* POS Hardware: Receipt Printer Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 80mm; /* Standard thermal receipt width */
+    margin: 0;
+    padding: 10px;
+    font-size: 12pt;
+    color: black !important;
+    background: white !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}
