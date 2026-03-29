@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { MagnifyingGlassIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 import { PlusIcon } from '@heroicons/react/24/solid';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function ProductSearch({ onAddProduct, products }) {
+  const { formatPrice } = useCurrency();
   const [query, setQuery] = useState('');
 
   const handleSearch = (e) => {
@@ -82,7 +84,7 @@ export default function ProductSearch({ onAddProduct, products }) {
                     <h4 className="mt-1 text-base font-bold text-slate-900 dark:text-white tracking-tight line-clamp-1 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                       {product.name}
                     </h4>
-                    <p className="text-xl font-black text-slate-900 dark:text-white tracking-tighter mt-1">${product.price.toFixed(2)}</p>
+                    <p className="text-xl font-black text-slate-900 dark:text-white tracking-tighter mt-1">{formatPrice(product.price)}</p>
                   </div>
                   
                   <button 
@@ -98,7 +100,7 @@ export default function ProductSearch({ onAddProduct, products }) {
                     }`}
                   >
                     <PlusIcon className="h-4 w-4 stroke-[3]" />
-                    <span>Add to Cart</span>
+                    <span>Add to Order</span>
                   </button>
                 </div>
               </div>

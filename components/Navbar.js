@@ -28,7 +28,7 @@ export default function Navbar({ onMenuClick }) {
           <ShoppingBagIcon className="h-6 w-6 text-slate-900 dark:text-white" />
         </div>
         <h1 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-primary-400 to-primary-200 bg-clip-text text-transparent tracking-tight">
-          RetailServe POS
+          RetailServe
         </h1>
       </div>
 

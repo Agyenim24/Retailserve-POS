@@ -1,4 +1,3 @@
-// pages/api/reports/restore.js
 import { store } from '../../../lib/store';
 import { requireAuth, ROLES } from '../../../lib/auth';
 
@@ -10,8 +9,12 @@ export default async function handler(req, res) {
     const { data } = req.body;
     if (!data) return res.status(400).json({ error: 'No data provided' });
     
-    store.restoreData(data);
-    return res.status(200).json({ message: 'System data restored successfully' });
+    try {
+      await store.restoreBackupData(data);
+      return res.status(200).json({ message: 'System data restored successfully' });
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
   }
 
   res.setHeader('Allow', ['POST']);

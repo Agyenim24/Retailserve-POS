@@ -24,7 +24,7 @@ export default async function handler(req, res) {
       const payload = { ...req.body, userId: session.user.id };
       const data = inventoryAdjustmentSchema.parse(payload);
       
-      const result = await store.adjustStock(data.productId, data.quantity, data.reason, data.userId);
+      const result = await store.adjustStock(data.productId, data.quantity, data.reason, data.userId, data.supplierId);
       if (!result) return res.status(404).json({ error: 'Product not found' });
       
       return res.status(200).json(result);

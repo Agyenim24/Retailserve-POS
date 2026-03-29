@@ -3,7 +3,7 @@ import { MOCK_WEEKLY_SALES } from '../../../lib/mockData';
 import { requireAuth, ROLES } from '../../../lib/auth';
 
 export default async function handler(req, res) {
-  const session = await requireAuth(req, res, [ROLES.ADMIN, ROLES.MANAGER]);
+  const session = await requireAuth(req, res, [ROLES.ADMIN, ROLES.MANAGER, ROLES.CASHIER]);
   if (!session) return;
 
   if (req.method === 'GET') {

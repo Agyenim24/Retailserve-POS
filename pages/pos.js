@@ -4,6 +4,7 @@ import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
 import ProductSearch from '../components/ProductSearch';
 import Cart from '../components/Cart';
+import CustomerSelector from '../components/CustomerSelector';
 import CheckoutModal from '../components/CheckoutModal';
 import ReceiptModal from '../components/ReceiptModal';
 import toast from 'react-hot-toast';
@@ -11,6 +12,7 @@ import toast from 'react-hot-toast';
 export default function POS() {
   const [products, setProducts] = useState([]);
   const [cartItems, setCartItems] = useState([]);
+  const [selectedCustomer, setSelectedCustomer] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [receiptSale, setReceiptSale] = useState(null);
   const [cartTotal, setCartTotal] = useState(0);
@@ -68,6 +70,7 @@ export default function POS() {
       return [...prev, {
         productId: product.id,
         productName: product.name,
+        productImage: product.image,
         unitPrice: product.price,
         quantity: 1
       }];
@@ -100,12 +103,28 @@ export default function POS() {
     setIsCheckoutOpen(true);
   };
 
+  const handleFastCheckout = async (total) => {
+    if (cartItems.length === 0) return;
+    setCartTotal(total);
+    // Auto-confirm with Cash
+    await handleConfirmCheckout({ 
+      method: 'CASH', 
+      payments: [{ method: 'CASH', amount: total }],
+      totalPaid: total, 
+      change: 0 
+    });
+  };
+
   const handleConfirmCheckout = async (paymentDetails) => {
     setIsCheckoutOpen(false);
     
     const saleData = {
       totalAmount: cartTotal,
+      customerId: selectedCustomer?.id,
+      customerName: selectedCustomer?.name,
       paymentMethod: paymentDetails.method,
+      payments: paymentDetails.payments,
+      pointsRedeemed: paymentDetails.pointsRedeemed || 0,
       items: cartItems.map(item => ({
         ...item,
         subtotal: item.quantity * item.unitPrice
@@ -125,6 +144,7 @@ export default function POS() {
       toast.success('Sale completed successfully!');
       setReceiptSale(data);
       setCartItems([]);
+      setSelectedCustomer(null);
       
       // Refresh inventory
       const prodRes = await fetch('/api/products');
@@ -137,10 +157,14 @@ export default function POS() {
 
   return (
     <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'CASHIER']}>
-      <Layout title="Point of Sale">
+      <Layout title="RetailServe">
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:h-[calc(100vh-12rem)] mb-10 lg:mb-0">
           {/* Main Product Area */}
-          <div className="flex-[2] min-w-0 h-[65vh] sm:h-[60vh] lg:h-auto">
+          <div className="flex-[2] min-w-0 h-[65vh] sm:h-[60vh] lg:h-auto flex flex-col gap-4">
+            <CustomerSelector 
+              selectedCustomer={selectedCustomer} 
+              onSelect={setSelectedCustomer} 
+            />
             <ProductSearch products={products} onAddProduct={handleAddProduct} />
           </div>
 
@@ -150,7 +174,9 @@ export default function POS() {
               items={cartItems} 
               onUpdateQuantity={handleUpdateQuantity}
               onRemove={handleRemoveItem}
+              onClear={() => setCartItems([])}
               onCheckout={initiateCheckout}
+              onFastCheckout={handleFastCheckout}
             />
           </div>
         </div>
@@ -158,6 +184,7 @@ export default function POS() {
         <CheckoutModal 
           isOpen={isCheckoutOpen}
           total={cartTotal}
+          selectedCustomer={selectedCustomer}
           onClose={() => setIsCheckoutOpen(false)}
           onConfirm={handleConfirmCheckout}
         />

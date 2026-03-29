@@ -9,8 +9,9 @@ export default function Layout({ children, title = 'POS System' }) {
   return (
     <div className="h-screen overflow-hidden bg-surface flex flex-col font-sans transition-colors duration-200">
       <Head>
-        <title>{title} | RetailServe</title>
+        <title>{title === 'RetailServe' ? title : `${title} | RetailServe`}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+        <link rel="icon" href="/shopping-bag.png" />
       </Head>
 
       <Navbar onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />

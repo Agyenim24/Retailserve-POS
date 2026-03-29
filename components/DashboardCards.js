@@ -5,8 +5,10 @@ import {
   ShoppingBagIcon,
   PresentationChartLineIcon
 } from '@heroicons/react/24/outline';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function DashboardCards({ data, role }) {
+  const { formatPrice } = useCurrency();
   if (!data) return null;
 
   const isCashier = role === 'CASHIER';
@@ -14,7 +16,7 @@ export default function DashboardCards({ data, role }) {
   const cards = [
     {
       title: isCashier ? "My Revenue Today" : "Today's Revenue",
-      value: `$${data.revenue?.toFixed(2) || '0.00'}`,
+      value: formatPrice(data.revenue),
       icon: CurrencyDollarIcon,
       color: "text-emerald-500",
       bg: "bg-emerald-500/10",
@@ -32,7 +34,7 @@ export default function DashboardCards({ data, role }) {
     ...(!isCashier ? [
       {
         title: "Today's Profit",
-        value: `$${data.profit?.toFixed(2) || '0.00'}`,
+        value: formatPrice(data.profit),
         icon: CurrencyDollarIcon,
         color: "text-blue-500",
         bg: "bg-blue-500/10",

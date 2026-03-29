@@ -8,6 +8,7 @@ import {
   UsersIcon,
   ChartBarIcon,
   InboxStackIcon,
+  BuildingOfficeIcon,
   XMarkIcon
 } from '@heroicons/react/24/outline';
 
@@ -18,9 +19,10 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const links = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
-    { name: 'Point of Sale', href: '/pos', icon: ShoppingCartIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
+    { name: 'RetailServe', href: '/pos', icon: ShoppingCartIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
     { name: 'Products', href: '/products', icon: CubeIcon, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Inventory', href: '/inventory', icon: InboxStackIcon, roles: ['ADMIN', 'MANAGER'] },
+    { name: 'Suppliers', href: '/suppliers', icon: BuildingOfficeIcon, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Customers', href: '/customers', icon: UsersIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
     { name: 'Reports', href: '/reports', icon: ChartBarIcon, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Users', href: '/users', icon: UsersIcon, roles: ['ADMIN', 'MANAGER'] },

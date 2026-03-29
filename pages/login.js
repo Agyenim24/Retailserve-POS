@@ -35,7 +35,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-surface flex items-center justify-center p-4">
       <Head>
-        <title>Login | RetailServe POS</title>
+        <title>Login | RetailServe</title>
+        <link rel="icon" href="/shopping-bag.png" />
       </Head>
       
       <div className="w-full max-w-md bg-surface-card rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-700/50 p-8 animate-in fade-in zoom-in-95 duration-300">

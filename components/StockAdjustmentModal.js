@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { XMarkIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
 
-export default function StockAdjustmentModal({ products, isOpen, onClose, onSave }) {
+export default function StockAdjustmentModal({ products, suppliers = [], isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
     productId: '',
     quantity: '', // note: positive for restock, negative for shrinkage
     reason: '',
+    supplierId: '',
   });
 
   if (!isOpen) return null;
@@ -16,8 +17,9 @@ export default function StockAdjustmentModal({ products, isOpen, onClose, onSave
       productId: formData.productId,
       quantity: parseInt(formData.quantity, 10),
       reason: formData.reason,
+      supplierId: formData.quantity > 0 ? formData.supplierId : null,
     });
-    setFormData({ productId: '', quantity: '', reason: '' });
+    setFormData({ productId: '', quantity: '', reason: '', supplierId: '' });
   };
 
   return (
@@ -76,6 +78,22 @@ export default function StockAdjustmentModal({ products, isOpen, onClose, onSave
                 onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
               />
             </div>
+
+            {formData.quantity > 0 && (
+              <div className="animate-in fade-in slide-in-from-top-2">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Supplier (Optional)</label>
+                <select
+                  className="input appearance-none bg-surface"
+                  value={formData.supplierId}
+                  onChange={(e) => setFormData({ ...formData, supplierId: e.target.value })}
+                >
+                  <option value="">Select a supplier...</option>
+                  {suppliers.map(s => (
+                    <option key={s.id} value={s.id}>{s.name}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="pt-4 flex gap-4">
               <button type="button" onClick={onClose} className="flex-1 btn-secondary py-3">Cancel</button>

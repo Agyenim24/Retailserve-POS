@@ -9,19 +9,22 @@ import toast from 'react-hot-toast';
 export default function Inventory() {
   const [logs, setLogs] = useState([]);
   const [products, setProducts] = useState([]);
+  const [suppliers, setSuppliers] = useState([]);
   const [lowStock, setLowStock] = useState([]);
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
 
   const fetchData = async () => {
     try {
-      const [logsRes, prodRes, lowRes] = await Promise.all([
+      const [logsRes, prodRes, lowRes, supRes] = await Promise.all([
         fetch('/api/inventory'),
         fetch('/api/products'),
-        fetch('/api/inventory/low-stock')
+        fetch('/api/inventory/low-stock'),
+        fetch('/api/suppliers')
       ]);
       setLogs(await logsRes.json());
       setProducts(await prodRes.json());
       setLowStock(await lowRes.json());
+      setSuppliers(await supRes.json());
     } catch (e) {
       toast.error('Failed to load inventory data');
     }
@@ -114,7 +117,14 @@ export default function Inventory() {
                     <td className={`px-6 py-4 text-right font-bold ${log.quantityChanged > 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                       {log.quantityChanged > 0 ? '+' : ''}{log.quantityChanged}
                     </td>
-                    <td className="px-6 py-4 text-slate-400 dark:text-slate-400">{log.reason}</td>
+                    <td className="px-6 py-4">
+                      <div className="text-slate-900 dark:text-white">{log.reason}</div>
+                      {log.supplierName && (
+                        <div className="text-[10px] text-primary-400 font-bold uppercase tracking-tighter mt-0.5">
+                          Supplier: {log.supplierName}
+                        </div>
+                      )}
+                    </td>
                   </tr>
                 ))}
                 {logs.length === 0 && (
@@ -132,6 +142,7 @@ export default function Inventory() {
         <StockAdjustmentModal 
           isOpen={isAdjustOpen} 
           products={products}
+          suppliers={suppliers}
           onClose={() => setIsAdjustOpen(false)} 
           onSave={handleAdjustment} 
         />

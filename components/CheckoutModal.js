@@ -10,16 +10,21 @@ import {
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 
-export default function CheckoutModal({ total, isOpen, onClose, onConfirm }) {
+export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selectedCustomer }) {
   const [isSplit, setIsSplit] = useState(false);
   const [payments, setPayments] = useState([{ method: 'CASH', amount: '' }]);
   const [activePaymentIndex, setActivePaymentIndex] = useState(0);
+  const [pointsToRedeem, setPointsToRedeem] = useState(0);
+
+  const pointsDiscount = useMemo(() => pointsToRedeem / 100, [pointsToRedeem]);
+  const discountedTotal = Math.max(0, total - pointsDiscount);
 
   useEffect(() => {
     if (isOpen) {
       setPayments([{ method: 'CASH', amount: '' }]);
       setIsSplit(false);
       setActivePaymentIndex(0);
+      setPointsToRedeem(0);
     }
   }, [isOpen]);
 
@@ -27,9 +32,9 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm }) {
     return payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
   }, [payments]);
 
-  const remaining = Math.max(0, total - totalPaid);
-  const change = Math.max(0, totalPaid - total);
-  const isFullyPaid = totalPaid >= total - 0.001; // Handle float precision
+  const remaining = Math.max(0, discountedTotal - totalPaid);
+  const change = Math.max(0, totalPaid - discountedTotal);
+  const isFullyPaid = totalPaid >= discountedTotal - 0.001; // Handle float precision
 
   const handleMethodChange = (index, method) => {
     const newPayments = [...payments];
@@ -60,12 +65,13 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm }) {
     if (!isFullyPaid) return;
     
     onConfirm({
-      paymentMethod: payments.length > 1 ? 'SPLIT' : payments[0].method,
+      method: payments.length > 1 ? 'SPLIT' : payments[0].method,
       payments: payments.map(p => ({
         method: p.method,
         amount: parseFloat(p.amount) || 0
       })),
       totalPaid,
+      pointsRedeemed: pointsToRedeem,
       change
     });
   };
@@ -103,12 +109,48 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm }) {
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            <div className="bg-primary-600 rounded-2xl p-6 text-white shadow-lg shadow-primary-900/20">
+            <div className={`rounded-2xl p-6 text-white shadow-lg transition-all ${pointsDiscount > 0 ? 'bg-indigo-600' : 'bg-primary-600'}`}>
               <div className="flex justify-between items-center opacity-80 mb-1">
-                <span className="text-xs font-bold uppercase tracking-widest">Total Amount Due</span>
+                <span className="text-xs font-bold uppercase tracking-widest">
+                  {pointsDiscount > 0 ? 'New Total After Points' : 'Total Amount Due'}
+                </span>
+                {pointsDiscount > 0 && <span className="text-xs font-black">-{pointsDiscount.toFixed(2)} Points Discount</span>}
               </div>
-              <div className="text-4xl font-black tracking-tighter">${total.toFixed(2)}</div>
+              <div className="text-4xl font-black tracking-tighter">${discountedTotal.toFixed(2)}</div>
             </div>
+
+            {selectedCustomer && (
+              <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-5 border border-slate-100 dark:border-slate-800 animate-in slide-in-from-left-4">
+                <div className="flex justify-between items-center mb-4">
+                  <div>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Customer Points</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white">{selectedCustomer.loyaltyPoints} Available</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Value</p>
+                    <p className="text-lg font-black text-emerald-500">${(selectedCustomer.loyaltyPoints / 100).toFixed(2)}</p>
+                  </div>
+                </div>
+                
+                <div className="space-y-3">
+                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest">Redeem Points</label>
+                  <input 
+                    type="range"
+                    min="0"
+                    max={Math.min(selectedCustomer.loyaltyPoints, Math.floor(total * 100))}
+                    step="10"
+                    className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-primary-600"
+                    value={pointsToRedeem}
+                    onChange={(e) => setPointsToRedeem(parseInt(e.target.value))}
+                  />
+                  <div className="flex justify-between text-xs font-bold text-slate-500">
+                    <span>0 Pts</span>
+                    <span className="text-primary-600">{pointsToRedeem} Pts ($ {pointsDiscount.toFixed(2)})</span>
+                    <span>Max Pts</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-4">
               <div className="flex justify-between items-center">

@@ -2,13 +2,16 @@ import { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
-import { UserPlusIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { UserPlusIcon, MagnifyingGlassIcon, ClockIcon, PencilSquareIcon, TrashIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import CustomerHistoryModal from '../components/CustomerHistoryModal';
 
 export default function Customers() {
   const [customers, setCustomers] = useState([]);
   const [search, setSearch] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [selectedCustomerForHistory, setSelectedCustomerForHistory] = useState(null);
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
 
   const fetchCustomers = () => {
@@ -80,12 +83,23 @@ export default function Customers() {
                   <th className="px-6 py-4 font-semibold">Contact</th>
                   <th className="px-6 py-4 font-semibold text-center">Loyalty Points</th>
                   <th className="px-6 py-4 font-semibold text-right">Joined</th>
+                  <th className="px-6 py-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-700/50">
                 {customers.map((c) => (
                   <tr key={c.id} className="hover:bg-surface-elevated/50 transition-colors">
-                    <td className="px-6 py-4 font-bold text-slate-900 dark:text-white">{c.name}</td>
+                    <td className="px-6 py-4">
+                      <button 
+                        onClick={() => {
+                          setSelectedCustomerForHistory(c);
+                          setIsHistoryOpen(true);
+                        }}
+                        className="font-bold text-slate-900 dark:text-white hover:text-primary-500 transition-colors text-left"
+                      >
+                        {c.name}
+                      </button>
+                    </td>
                     <td className="px-6 py-4">
                       <div className="font-medium">{c.email || '-'}</div>
                       <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">{c.phone || '-'}</div>
@@ -98,11 +112,31 @@ export default function Customers() {
                     <td className="px-6 py-4 text-right text-slate-400 dark:text-slate-500 text-xs text-nowrap">
                       {new Date(c.createdAt).toLocaleDateString()}
                     </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => {
+                            setSelectedCustomerForHistory(c);
+                            setIsHistoryOpen(true);
+                          }} 
+                          className="p-1 text-indigo-400 hover:text-indigo-500 transition-colors"
+                          title="View History"
+                        >
+                          <ClockIcon className="h-5 w-5" />
+                        </button>
+                        <button className="p-1 text-blue-400 hover:text-blue-500 transition-colors opacity-30 cursor-not-allowed">
+                          <PencilSquareIcon className="h-5 w-5" />
+                        </button>
+                        <button className="p-1 text-red-400 hover:text-red-500 transition-colors opacity-30 cursor-not-allowed">
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                    </td>
                   </tr>
                 ))}
                 {customers.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
+                    <td colSpan="5" className="px-6 py-12 text-center text-slate-400 dark:text-slate-500">
                       No customers found.
                     </td>
                   </tr>
@@ -138,6 +172,12 @@ export default function Customers() {
             </div>
           </div>
         )}
+
+        <CustomerHistoryModal 
+          customer={selectedCustomerForHistory}
+          isOpen={isHistoryOpen}
+          onClose={() => setIsHistoryOpen(false)}
+        />
       </Layout>
     </ProtectedRoute>
   );

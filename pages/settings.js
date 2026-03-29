@@ -1,10 +1,12 @@
 import Layout from '../components/Layout';
 import ProtectedRoute from '../components/ProtectedRoute';
-import { Cog6ToothIcon, ShieldCheckIcon, CreditCardIcon, BriefcaseIcon, DeviceTabletIcon, CloudArrowUpIcon, CloudArrowDownIcon, DocumentArrowDownIcon, ArrowPathIcon } from '@heroicons/react/24/outline';
+import { Cog6ToothIcon, ShieldCheckIcon, CreditCardIcon, BriefcaseIcon, DeviceTabletIcon, CloudArrowUpIcon, CloudArrowDownIcon, DocumentArrowDownIcon, ArrowPathIcon, BanknotesIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import { useState } from 'react';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function Settings() {
+  const { currency, toggleCurrency } = useCurrency();
   const [hardware, setHardware] = useState({
     barcodeScanner: true,
     receiptPrinter: true,
@@ -18,24 +20,48 @@ export default function Settings() {
     { name: 'Security & Access', desc: 'Firewall, API keys and sensitive controls', icon: ShieldCheckIcon },
   ];
 
-  const handleExportData = async () => {
+  const jsonToCsv = (json) => {
+    if (!json || json.length === 0) return '';
+    const headers = Object.keys(json[0]).join(',');
+    const rows = json.map(row => 
+      Object.values(row).map(val => `"${val?.toString().replace(/"/g, '""')}"`).join(',')
+    );
+    return [headers, ...rows].join('\n');
+  };
+
+  const handleExportData = async (format = 'json') => {
+    const loadingToast = toast.loading(`Preparing ${format.toUpperCase()} backup...`);
     try {
-      const res = await fetch('/api/reports/export'); // I'll create this API
+      const res = await fetch('/api/reports/export');
       if (!res.ok) throw new Error('Export failed');
-      const data = await res.json();
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const backup = await res.json();
+      
+      let blob;
+      let filename;
+
+      if (format === 'json') {
+        blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+        filename = `pos-backup-${new Date().toISOString().split('T')[0]}.json`;
+      } else {
+        // Export products as primary CSV example
+        blob = new Blob([jsonToCsv(backup.data.products)], { type: 'text/csv' });
+        filename = `products-export-${new Date().toISOString().split('T')[0]}.csv`;
+      }
+
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.download = filename;
       a.click();
-      toast.success('Backup exported successfully');
+      toast.success(`${format.toUpperCase()} exported successfully`, { id: loadingToast });
     } catch (e) {
-      toast.error('Failed to export data');
+      toast.error('Failed to export data', { id: loadingToast });
     }
   };
 
   const handleRestoreData = () => {
+    if (!confirm('WARNING: Restoring data will overwrite existing records. Are you sure you want to proceed?')) return;
+    
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.json';
@@ -43,10 +69,14 @@ export default function Settings() {
       const file = e.target.files[0];
       if (!file) return;
       
+      const loadingToast = toast.loading('Restoring system data...');
       const reader = new FileReader();
       reader.onload = async (event) => {
         try {
           const content = JSON.parse(event.target.result);
+          // Check if it's the right format
+          if (!content.data) throw new Error('Invalid backup format');
+
           const res = await fetch('/api/reports/restore', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -54,10 +84,10 @@ export default function Settings() {
           });
           
           if (!res.ok) throw new Error('Restore failed');
-          toast.success('System data restored successfully');
-          window.location.reload(); // Reload to reflect changes
+          toast.success('System data restored successfully', { id: loadingToast });
+          setTimeout(() => window.location.reload(), 1500); 
         } catch (err) {
-          toast.error('Invalid backup file or restore failed');
+          toast.error(err.message || 'Invalid backup file or restore failed', { id: loadingToast });
         }
       };
       reader.readAsText(file);
@@ -109,6 +139,42 @@ export default function Settings() {
           </div>
         </div>
 
+        {/* Localization & Currency Section */}
+        <div className="mb-12">
+          <div className="flex items-center gap-2 mb-6">
+            <BanknotesIcon className="h-6 w-6 text-indigo-500" />
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white">Localization & Currency</h2>
+          </div>
+          <div className="card p-6 border-l-4 border-indigo-500">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+              <div>
+                <h3 className="font-bold text-slate-900 dark:text-white">Default Currency</h3>
+                <p className="text-sm text-slate-400 mt-1">Select the main currency for products, sales, and total revenue tracking.</p>
+              </div>
+              <div className="flex bg-slate-50 dark:bg-slate-800/50 p-1 rounded-xl border border-slate-300 dark:border-slate-700">
+                <button 
+                  onClick={() => {
+                    toggleCurrency('$');
+                    toast.success('Currency switched to USD');
+                  }}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${currency === '$' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
+                >
+                  USD ($)
+                </button>
+                <button 
+                  onClick={() => {
+                    toggleCurrency('GH₵');
+                    toast.success('Currency switched to GHS');
+                  }}
+                  className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${currency === 'GH₵' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white'}`}
+                >
+                  GHS (GH₵)
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Backup & Recovery Section */}
         <div className="mb-12">
           <div className="flex items-center gap-2 mb-6">
@@ -123,10 +189,15 @@ export default function Settings() {
                 </div>
                 <div>
                   <h3 className="font-bold text-slate-900 dark:text-white">Export Database Backup</h3>
-                  <p className="text-sm text-slate-400 mt-1 mb-4">Download a complete snapshot of your products, sales, and customers in JSON format.</p>
-                  <button onClick={handleExportData} className="btn-primary py-2 px-4 text-xs flex items-center gap-2">
-                    <CloudArrowDownIcon className="h-4 w-4" /> Download Backup
-                  </button>
+                  <p className="text-sm text-slate-400 mt-1 mb-4">Download a complete snapshot of your products, sales, and customers.</p>
+                  <div className="flex flex-wrap gap-2">
+                    <button onClick={() => handleExportData('json')} className="btn-primary py-2 px-4 text-xs flex items-center gap-2">
+                      <CloudArrowDownIcon className="h-4 w-4" /> Download JSON
+                    </button>
+                    <button onClick={() => handleExportData('csv')} className="btn-secondary py-2 px-4 text-xs flex items-center gap-2 border-emerald-500/20 text-emerald-500 hover:bg-emerald-500/10">
+                      <DocumentArrowDownIcon className="h-4 w-4" /> Download CSV (Products)
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
