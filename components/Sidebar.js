@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useSession } from 'next-auth/react';
 import {
   HomeIcon,
+  ShoppingBagIcon,
   ShoppingCartIcon,
   CubeIcon,
   UsersIcon,
@@ -44,14 +45,19 @@ export default function Sidebar({ isOpen, onClose }) {
       {/* Sidebar - fixed and toggled on mobile, relative and always visible on lg */}
       <aside className={`
         fixed inset-y-0 left-0 z-50 w-64 bg-surface-card border-r border-slate-200 dark:border-slate-700/50 flex flex-col 
-        h-[calc(100vh-64px)] top-16 lg:top-0 lg:h-full lg:static lg:block
+        h-screen top-0 lg:h-full lg:static lg:block
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="flex justify-between items-center p-5 lg:hidden border-b border-slate-200 dark:border-slate-700/50 bg-slate-50 dark:bg-slate-800/30">
-          <span className="font-extrabold text-slate-900 dark:text-white uppercase tracking-widest text-xs">Navigation Menu</span>
+        <div className="flex justify-between items-center p-4 lg:hidden border-b border-slate-200 dark:border-slate-700/50 bg-surface h-16 shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-primary-600 rounded shadow-md shadow-primary-900/20">
+              <ShoppingBagIcon className="h-5 w-5 text-white" />
+            </div>
+            <span className="font-bold text-slate-900 dark:text-white tracking-tight">RetailServe</span>
+          </div>
           <button onClick={onClose} className="p-2 -mr-2 text-slate-400 hover:text-slate-900 dark:text-slate-500 dark:hover:text-white transition-colors">
-            <XMarkIcon className="h-6 w-6" />
+            <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
 

@@ -7,8 +7,10 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function SalesChart({ data }) {
+  const { formatPrice, currency } = useCurrency();
   if (!data || data.length === 0) {
     return (
       <div className="card p-6 h-96 flex flex-col items-center justify-center text-slate-400 dark:text-slate-500">
@@ -23,7 +25,7 @@ export default function SalesChart({ data }) {
         <div className="bg-surface-elevated border border-slate-300 dark:border-slate-600 rounded-lg p-3 shadow-xl">
           <p className="text-slate-900 dark:text-white font-medium mb-1">{label}</p>
           <p className="text-primary-400 text-sm">
-            Revenue: <span className="font-bold">${payload[0].value.toFixed(2)}</span>
+            Revenue: <span className="font-bold">{formatPrice(payload[0].value)}</span>
           </p>
           {payload[1] && (
             <p className="text-emerald-400 text-sm">
@@ -62,7 +64,7 @@ export default function SalesChart({ data }) {
               tick={{ fill: '#94a3b8' }} 
               axisLine={false} 
               tickLine={false} 
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `${currency}${value}`}
             />
             <Tooltip content={<CustomTooltip />} cursor={{ fill: '#334155', opacity: 0.4 }} />
             <Bar dataKey="sales" fill="#3b82f6" radius={[4, 4, 0, 0]} barSize={40} />

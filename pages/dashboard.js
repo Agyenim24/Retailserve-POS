@@ -5,9 +5,11 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import DashboardCards from '../components/DashboardCards';
 import SalesChart from '../components/SalesChart';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function Dashboard() {
   const { data: session } = useSession();
+  const { formatPrice } = useCurrency();
   const [reportData, setReportData] = useState(null);
   const [weeklyData, setWeeklyData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -89,7 +91,7 @@ export default function Dashboard() {
                       </div>
                     </div>
                     <span className="font-medium text-emerald-400">
-                      ${product.totalRevenue.toFixed(2)}
+                      {formatPrice(product.totalRevenue)}
                     </span>
                   </div>
                 ))}
@@ -110,7 +112,7 @@ export default function Dashboard() {
                         <p className="text-xs text-slate-400 dark:text-slate-400">{cashier.totalSales} transactions</p>
                       </div>
                       <span className="font-medium text-indigo-400">
-                        ${cashier.totalRevenue.toFixed(2)}
+                        {formatPrice(cashier.totalRevenue)}
                       </span>
                     </div>
                   ))}

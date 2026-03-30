@@ -5,8 +5,10 @@ import ProtectedRoute from '../components/ProtectedRoute';
 import ProductForm from '../components/ProductForm';
 import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function Products() {
+  const { formatPrice } = useCurrency();
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState('');
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -120,7 +122,7 @@ export default function Products() {
                       <span className="badge-blue capitalize">{product.category}</span>
                     </td>
                     <td className="px-6 py-4 text-right font-medium text-emerald-400">
-                      ${product.price.toFixed(2)}
+                      {formatPrice(product.price)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <span className={`px-2.5 py-1 rounded-md font-bold text-xs ${

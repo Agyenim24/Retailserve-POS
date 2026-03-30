@@ -9,8 +9,10 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selectedCustomer }) {
+  const { formatPrice, currency } = useCurrency();
   const [isSplit, setIsSplit] = useState(false);
   const [payments, setPayments] = useState([{ method: 'CASH', amount: '' }]);
   const [activePaymentIndex, setActivePaymentIndex] = useState(0);
@@ -116,7 +118,7 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
                 </span>
                 {pointsDiscount > 0 && <span className="text-xs font-black">-{pointsDiscount.toFixed(2)} Points Discount</span>}
               </div>
-              <div className="text-4xl font-black tracking-tighter">${discountedTotal.toFixed(2)}</div>
+              <div className="text-4xl font-black tracking-tighter">{formatPrice(discountedTotal)}</div>
             </div>
 
             {selectedCustomer && (
@@ -128,7 +130,7 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Value</p>
-                    <p className="text-lg font-black text-emerald-500">${(selectedCustomer.loyaltyPoints / 100).toFixed(2)}</p>
+                    <p className="text-lg font-black text-emerald-500">{formatPrice(selectedCustomer.loyaltyPoints / 100)}</p>
                   </div>
                 </div>
                 
@@ -145,7 +147,7 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
                   />
                   <div className="flex justify-between text-xs font-bold text-slate-500">
                     <span>0 Pts</span>
-                    <span className="text-primary-600">{pointsToRedeem} Pts ($ {pointsDiscount.toFixed(2)})</span>
+                    <span className="text-primary-600">{pointsToRedeem} Pts ({formatPrice(pointsDiscount)})</span>
                     <span>Max Pts</span>
                   </div>
                 </div>
@@ -244,7 +246,7 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
                   </div>
                 ) : (
                   <div className="text-red-500 font-black uppercase text-sm">
-                    Remaining: ${remaining.toFixed(2)}
+                    Remaining: {formatPrice(remaining)}
                   </div>
                 )}
               </div>
@@ -252,7 +254,7 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
             {change > 0 && (
               <div className="text-right">
                 <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Change Due</span>
-                <div className="text-2xl font-black text-emerald-500">${change.toFixed(2)}</div>
+                <div className="text-2xl font-black text-emerald-500">{formatPrice(change)}</div>
               </div>
             )}
           </div>
@@ -269,14 +271,14 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
                   onClick={() => handleAmountChange(activePaymentIndex, val.toString())}
                   className="py-2.5 bg-white dark:bg-slate-800 rounded-xl font-black text-slate-700 dark:text-slate-200 shadow-sm hover:shadow-md hover:bg-primary-50 transition-all border border-slate-100 dark:border-slate-700 text-sm"
                 >
-                  +${val}
+                  +{currency}{val}
                 </button>
               ))}
               <button 
                 onClick={setExactAmount}
                 className="py-2.5 bg-primary-600 rounded-xl font-black text-white shadow-lg shadow-primary-900/20 hover:bg-primary-700 transition-all text-sm"
               >
-                Exact ${remaining.toFixed(2)}
+                Exact {formatPrice(remaining)}
               </button>
             </div>
 

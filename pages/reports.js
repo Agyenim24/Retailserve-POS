@@ -6,8 +6,10 @@ import SalesChart from '../components/SalesChart';
 import DashboardCards from '../components/DashboardCards';
 import { PresentationChartLineIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
+import { useCurrency } from '../lib/CurrencyContext';
 
 export default function Reports() {
+  const { formatPrice } = useCurrency();
   const [reportData, setReportData] = useState(null);
   const [weeklyData, setWeeklyData] = useState([]);
   const [salesHistory, setSalesHistory] = useState([]);
@@ -114,7 +116,7 @@ export default function Reports() {
                       </div>
                     </div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">
-                      ${(Number(p.totalRevenue) || 0).toFixed(2)}
+                      {formatPrice(p.totalRevenue)}
                     </div>
                   </div>
                 ))}
@@ -136,7 +138,7 @@ export default function Reports() {
                       <div className="text-xs text-slate-400">{c.totalSales} transactions</div>
                     </div>
                     <div className="text-sm font-bold text-emerald-500">
-                      ${(Number(c.totalRevenue) || 0).toFixed(2)}
+                      {formatPrice(c.totalRevenue)}
                     </div>
                   </div>
                 ))}
@@ -150,14 +152,14 @@ export default function Reports() {
            <div className="card p-5 bg-gradient-to-br from-blue-500/5 to-transparent">
               <p className="text-xs font-bold uppercase tracking-wider text-blue-500 mb-1">Total Inventory Value</p>
               <h4 className="text-2xl font-black text-slate-900 dark:text-white">
-                ${(Number(reportData?.inventoryReport?.totalValue) || 0).toFixed(2)}
+                {formatPrice(reportData?.inventoryReport?.totalValue)}
               </h4>
               <p className="text-xs text-slate-400 mt-2">{reportData?.inventoryReport?.totalItems || 0} items in stock</p>
            </div>
            <div className="card p-5 bg-gradient-to-br from-emerald-500/5 to-transparent">
               <p className="text-xs font-bold uppercase tracking-wider text-emerald-500 mb-1">Potential Profit</p>
               <h4 className="text-2xl font-black text-slate-900 dark:text-white">
-                ${(Number(reportData?.inventoryReport?.potentialProfit) || 0).toFixed(2)}
+                {formatPrice(reportData?.inventoryReport?.potentialProfit)}
               </h4>
               <p className="text-xs text-slate-400 mt-2">Based on current stock levels</p>
            </div>
@@ -207,7 +209,7 @@ export default function Reports() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right font-bold text-emerald-400">
-                      ${(Number(sale.totalAmount) || 0).toFixed(2)}
+                      {formatPrice(sale.totalAmount)}
                     </td>
                   </tr>
                 ))}
