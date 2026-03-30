@@ -20,7 +20,7 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const links = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
-    { name: 'RetailServe', href: '/pos', icon: ShoppingCartIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
+    { name: 'Sales Terminal', href: '/pos', icon: ShoppingCartIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
     { name: 'Products', href: '/products', icon: CubeIcon, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Inventory', href: '/inventory', icon: InboxStackIcon, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Suppliers', href: '/suppliers', icon: BuildingOfficeIcon, roles: ['ADMIN', 'MANAGER'] },

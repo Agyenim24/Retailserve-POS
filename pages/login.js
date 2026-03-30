@@ -6,8 +6,8 @@ import toast from 'react-hot-toast';
 import { LockClosedIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 export default function Login() {
-  const [email, setEmail] = useState('admin@pos.com');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
@@ -45,7 +45,7 @@ export default function Login() {
             <LockClosedIcon className="h-8 w-8" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Welcome Back</h1>
-          <p className="text-slate-400 dark:text-slate-400">Sign in to the POS system</p>
+          <p className="text-slate-400 dark:text-slate-400">Sign in to RetailServe</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -97,14 +97,6 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-slate-200 dark:border-slate-700/50">
-          <p className="text-xs text-slate-400 dark:text-slate-500 text-center mb-3 text-uppercase tracking-wider font-semibold">Demo Accounts</p>
-          <div className="flex flex-wrap justify-center gap-2">
-            <span className="badge-blue cursor-help" title="admin@pos.com / admin123">Admin</span>
-            <span className="badge-purple cursor-help" title="manager@pos.com / manager123">Manager</span>
-            <span className="badge-green cursor-help" title="cashier@pos.com / cashier123">Cashier</span>
-          </div>
-        </div>
       </div>
     </div>
   );
