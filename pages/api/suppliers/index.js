@@ -1,5 +1,6 @@
 import { requireAuth, ROLES } from '../../../lib/auth';
 import { store } from '../../../lib/store';
+import { supplierSchema } from '../../../lib/validations';
 
 export default async function handler(req, res) {
   const session = await requireAuth(req, res, [ROLES.ADMIN, ROLES.MANAGER]);

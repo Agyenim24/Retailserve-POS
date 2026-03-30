@@ -1,5 +1,6 @@
 import { requireAuth, ROLES } from '../../../lib/auth';
 import { store } from '../../../lib/store';
+import { supplierSchema } from '../../../lib/validations';
 
 export default async function handler(req, res) {
   const session = await requireAuth(req, res, [ROLES.ADMIN, ROLES.MANAGER]);
@@ -9,7 +10,8 @@ export default async function handler(req, res) {
 
   try {
     if (req.method === 'PUT') {
-      const updated = await store.updateSupplier(id, req.body);
+      const data = supplierSchema.parse(req.body);
+      const updated = await store.updateSupplier(id, data);
       return res.status(200).json(updated);
     }
 
