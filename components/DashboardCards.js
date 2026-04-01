@@ -56,7 +56,7 @@ export default function DashboardCards({ data, role }) {
       {cards.map((card, i) => (
         <div key={i} className={`card p-6 flex items-center justify-between border-b-4 ${card.border}`}>
           <div>
-            <p className="text-slate-400 dark:text-slate-400 text-sm font-medium mb-1">{card.title}</p>
+            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium mb-1">{card.title}</p>
             <h3 className="text-3xl font-bold text-slate-900 dark:text-white">{card.value}</h3>
           </div>
           <div className={`h-14 w-14 rounded-2xl flex items-center justify-center ${card.bg}`}>

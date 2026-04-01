@@ -34,7 +34,7 @@ export default function ProductForm({ product, isOpen, onClose, onSave }) {
           <h2 className="text-xl font-bold text-slate-900 dark:text-white">
             {product ? 'Edit Product' : 'Add New Product'}
           </h2>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors">
+          <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>

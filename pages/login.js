@@ -6,15 +6,25 @@ import toast from 'react-hot-toast';
 import { LockClosedIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
 
 export default function Login() {
+  // --- STATE MANAGEMENT ---
+  // Store the user's typed email and password
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Track if the login request is currently processing (to show a spinner and disable button)
   const [loading, setLoading] = useState(false);
+  
+  // Next.js router for redirecting users to other pages after login
   const router = useRouter();
 
+  // --- LOGIN HANDLER ---
+  // Triggered when the user clicks "Sign In" or presses Enter on the form
   const handleLogin = async (e) => {
+    // Prevent the default browser form submission (which refreshes the whole page)
     e.preventDefault();
     setLoading(true);
 
+    // Call NextAuth's signIn function with our custom 'credentials' provider
+    // 'redirect: false' means NextAuth won't automatically redirect, allowing us to handle errors or success manually below
     const result = await signIn('credentials', {
       redirect: false,
       email,
@@ -22,12 +32,15 @@ export default function Login() {
     });
 
     if (result.error) {
+      // If the backend API returned an error (e.g., wrong password, user not found)
       toast.error('Invalid email or password');
       setLoading(false);
     } else {
+      // If login is successful, NextAuth has saved the session cookie securely.
       toast.success('Login successful');
-      // The session callback handles role redirect, but we force dashboard here
-      // and ProtectedRoute will correct it if needed.
+      
+      // Direct the user to the dashboard. 
+      // Note: If they are a 'Cashier', the ProtectedRoute component on the Dashboard will automatically catch them and reroute them to the POS page.
       router.push('/dashboard');
     }
   };
@@ -45,7 +58,7 @@ export default function Login() {
             <LockClosedIcon className="h-8 w-8" />
           </div>
           <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Welcome Back</h1>
-          <p className="text-slate-400 dark:text-slate-400">Sign in to RetailServe</p>
+          <p className="text-slate-500 dark:text-slate-500 dark:text-slate-400">Sign in to RetailServe</p>
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
@@ -61,7 +74,7 @@ export default function Login() {
                 onChange={(e) => setEmail(e.target.value)}
                 required
                 className="input pl-10"
-                placeholder="admin@pos.com"
+                placeholder="user@gmail.com"
               />
             </div>
           </div>
@@ -102,11 +115,17 @@ export default function Login() {
   );
 }
 
+// --- SERVER SIDE LOGIC ---
+// This runs on the Next.js server *before* this page is ever sent to the browser
 export async function getServerSideProps(context) {
   const { getSession } = await import('next-auth/react');
+  
+  // Check if the user already has a valid session cookie
   const session = await getSession(context);
 
   if (session) {
+    // If they are already logged in, they shouldn't see the Login page.
+    // Redirect them immediately to the dashboard.
     return {
       redirect: {
         destination: '/dashboard', // The ProtectedRoute component on Dashboard will handle role-based routing if they're a Cashier
@@ -115,6 +134,7 @@ export async function getServerSideProps(context) {
     };
   }
 
+  // If there's no session, allow the page to render normally
   return {
     props: {},
   };

@@ -10,13 +10,22 @@ import ReceiptModal from '../components/ReceiptModal';
 import toast from 'react-hot-toast';
 
 export default function POS() {
+  // --- STATE MANAGEMENT ---
+  // Store the list of available products fetched from the database
   const [products, setProducts] = useState([]);
+  // Track items the cashier has added to the current transaction
   const [cartItems, setCartItems] = useState([]);
+  // Track an optionally attached customer for loyalty points/history
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  // Manage the visibility of the checkout/payment modal
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  // Hold the final sale data to display on the receipt, determines if receipt modal is open
   const [receiptSale, setReceiptSale] = useState(null);
+  // Track the total cost of the customer's cart
   const [cartTotal, setCartTotal] = useState(0);
 
+  // --- INITIAL DATA FETCHING ---
+  // Runs once when the POS page loads to grab inventory
   useEffect(() => {
     fetch('/api/products')
       .then(res => res.json())
@@ -60,13 +69,17 @@ export default function POS() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [products, isCheckoutOpen, receiptSale]); // Re-bind when products or visibility changes
 
+  // --- CART MANAGEMENT ---
+  // Adds a product to the cart or throws an error if it's already there
   const handleAddProduct = (product) => {
     setCartItems(prev => {
+      // Check if product is already in the cart
       const existing = prev.find(item => item.productId === product.id);
       if (existing) {
         toast.error(`${product.name} is already in the cart. Update quantity in the order sidebar.`);
         return prev;
       }
+      // Add new item with a default quantity of 1
       return [...prev, {
         productId: product.id,
         productName: product.name,
@@ -98,15 +111,18 @@ export default function POS() {
     setCartItems(prev => prev.filter(item => item.productId !== productId));
   };
 
+  // --- CHECKOUT LOGIC ---
+  // Opens the checkout modal and sets the final verified total
   const initiateCheckout = (total) => {
     setCartTotal(total);
     setIsCheckoutOpen(true);
   };
 
+  // Allows instant cash checkout without opening the modal
   const handleFastCheckout = async (total) => {
     if (cartItems.length === 0) return;
     setCartTotal(total);
-    // Auto-confirm with Cash
+    // Auto-confirm with exact Cash
     await handleConfirmCheckout({ 
       method: 'CASH', 
       payments: [{ method: 'CASH', amount: total }],
@@ -115,9 +131,11 @@ export default function POS() {
     });
   };
 
+  // Submits the finalized sale to the backend database
   const handleConfirmCheckout = async (paymentDetails) => {
-    setIsCheckoutOpen(false);
+    setIsCheckoutOpen(false); // Close the modal
     
+    // Construct the payload to send to the server
     const saleData = {
       totalAmount: cartTotal,
       customerId: selectedCustomer?.id,
@@ -132,6 +150,7 @@ export default function POS() {
     };
 
     try {
+      // Send secure request to backend API
       const res = await fetch('/api/sales', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -142,11 +161,15 @@ export default function POS() {
       if (!res.ok) throw new Error(data.error || 'Checkout failed');
 
       toast.success('Sale completed successfully!');
+      
+      // Setting receiptSale automatically opens the receipt modal
       setReceiptSale(data);
+      
+      // Reset the POS terminal for the next customer
       setCartItems([]);
       setSelectedCustomer(null);
       
-      // Refresh inventory
+      // Refresh inventory so stock counts are accurate
       const prodRes = await fetch('/api/products');
       setProducts(await prodRes.json());
       

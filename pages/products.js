@@ -8,12 +8,20 @@ import toast from 'react-hot-toast';
 import { useCurrency } from '../lib/CurrencyContext';
 
 export default function Products() {
+  // --- STATE ---
+  // The system's currency formatter
   const { formatPrice } = useCurrency();
+  // Array holding the products shown in the table
   const [products, setProducts] = useState([]);
+  // Search text to filter the table
   const [search, setSearch] = useState('');
+  // Controls if the "Add/Edit Product" popup is visible
   const [isFormOpen, setIsFormOpen] = useState(false);
+  // Holds the specific product object if the user clicks "Edit", otherwise null
   const [editingProduct, setEditingProduct] = useState(null);
 
+  // --- FETCHING ---
+  // Re-fetches the list of products from Postgres via the API
   const fetchProducts = () => {
     fetch(`/api/products?search=${search}`)
       .then(res => res.json())
@@ -21,35 +29,46 @@ export default function Products() {
       .catch(() => toast.error('Failed to load products'));
   };
 
+  // Automatically triggers fetchProducts when the component mounts or when 'search' changes
   useEffect(() => {
     fetchProducts();
   }, [search]);
 
+  // --- ACTIONS ---
+  // Opens the modal with an empty form for adding a new product
   const handleOpenNew = () => {
     setEditingProduct(null);
     setIsFormOpen(true);
   };
 
+  // Opens the modal and pre-fills it with the selected product's data
   const handleOpenEdit = (product) => {
     setEditingProduct(product);
     setIsFormOpen(true);
   };
 
+  // Irreversibly deletes a product from the database
   const handleDelete = async (id) => {
+    // Built-in browser confirmation popup to prevent accidental clicks
     if (!confirm('Are you sure you want to delete this product?')) return;
     
     try {
+      // Sent securely via the DELETE HTTP method
       const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Delete failed');
+      
       toast.success('Product deleted');
-      fetchProducts();
+      fetchProducts(); // Refresh the table
     } catch (error) {
       toast.error(error.message);
     }
   };
 
+  // Submits the filled-out Add/Edit form to the backend
   const handleSave = async (data) => {
+    // If editing, use the specific product ID. Otherwise hit the general /api/products route
     const url = editingProduct ? `/api/products/${editingProduct.id}` : '/api/products';
+    // PUT updates existing records, POST creates new ones
     const method = editingProduct ? 'PUT' : 'POST';
 
     try {
@@ -63,8 +82,8 @@ export default function Products() {
       if (!res.ok) throw new Error(resData.error || 'Failed to save');
       
       toast.success(editingProduct ? 'Product updated' : 'Product created');
-      setIsFormOpen(false);
-      fetchProducts();
+      setIsFormOpen(false); // Close the popup
+      fetchProducts(); // Refresh the table
     } catch (error) {
       toast.error(typeof error.message === 'string' ? error.message : 'Validation Error');
     }
@@ -76,7 +95,7 @@ export default function Products() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white">Product Catalog</h1>
-            <p className="text-slate-400 dark:text-slate-400 mt-1">Manage inventory items and pricing</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage inventory items and pricing</p>
           </div>
           <button onClick={handleOpenNew} className="btn-primary flex items-center gap-2">
             <PlusIcon className="h-5 w-5" />
@@ -101,8 +120,8 @@ export default function Products() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-              <thead className="bg-surface-card text-xs uppercase text-slate-400 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
+            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-500 dark:text-slate-300">
+              <thead className="bg-surface-card text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Name</th>
                   <th className="px-6 py-4 font-semibold">Category</th>
@@ -128,7 +147,7 @@ export default function Products() {
                       <span className={`px-2.5 py-1 rounded-md font-bold text-xs ${
                         product.quantity <= product.lowStockThreshold 
                           ? 'bg-red-500/10 text-red-500' 
-                          : 'bg-surface text-slate-700 dark:text-slate-300'
+                          : 'bg-surface text-slate-700 dark:text-slate-500 dark:text-slate-300'
                       }`}>
                         {product.quantity}
                       </span>
@@ -137,13 +156,13 @@ export default function Products() {
                       <div className="flex items-center justify-center gap-2">
                         <button 
                           onClick={() => handleOpenEdit(product)}
-                          className="p-2 text-slate-400 dark:text-slate-400 hover:text-primary-400 hover:bg-primary-500/10 rounded-lg transition-colors"
+                          className="p-2 text-slate-500 dark:text-slate-400 hover:text-primary-400 hover:bg-primary-500/10 rounded-lg transition-colors"
                         >
                           <PencilIcon className="h-4 w-4" />
                         </button>
                         <button 
                           onClick={() => handleDelete(product.id)}
-                          className="p-2 text-slate-400 dark:text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                          className="p-2 text-slate-500 dark:text-slate-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                         >
                           <TrashIcon className="h-4 w-4" />
                         </button>

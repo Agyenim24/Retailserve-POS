@@ -28,7 +28,7 @@ export default function ReceiptModal({ sale, isOpen, onClose }) {
       <div className="w-full max-w-sm bg-surface-card rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         <div className="p-4 border-b border-slate-200 dark:border-slate-700/50 flex justify-between items-center bg-surface-elevated">
           <h2 className="text-lg font-bold text-slate-900 dark:text-white">Transaction Complete</h2>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors">
+          <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>

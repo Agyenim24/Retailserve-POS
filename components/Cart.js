@@ -2,15 +2,22 @@ import { TrashIcon, PlusIcon, MinusIcon, ShoppingCartIcon, ArchiveBoxXMarkIcon, 
 import { useCurrency } from '../lib/CurrencyContext';
 
 export default function Cart({ items, onUpdateQuantity, onRemove, onClear, onCheckout, onFastCheckout }) {
+  // --- CONTEXT & DERIVED STATE ---
+  // Access global currency formatter function
   const { formatPrice } = useCurrency();
+  
+  // Calculate the raw total of all items in the cart
   const subtotal = items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
+  
+  // Apply a standard 5% tax rate (can be moved to settings later)
   const taxRate = 0.05;
   const taxAmount = subtotal * taxRate;
   const total = subtotal + taxAmount;
 
   return (
     <div className="flex flex-col h-full bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-xl overflow-hidden">
-      {/* Header */}
+      {/* --- HEADER SECTION --- */}
+      {/* Displays the cart icon and a 'Clear' button if items exist */}
       <div className="px-6 py-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50">
         <div className="flex items-center gap-3">
           <div className="p-2 bg-indigo-600 rounded-lg shadow-lg shadow-indigo-900/20">
@@ -30,7 +37,8 @@ export default function Cart({ items, onUpdateQuantity, onRemove, onClear, onChe
         )}
       </div>
 
-      {/* Cart Items List */}
+      {/* --- CART ITEMS LIST --- */}
+      {/* Scrollable area showing all selected products alongside their quantities and active controls */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3 custom-scrollbar">
         {items.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-slate-300 dark:text-slate-600 py-10">
@@ -66,6 +74,8 @@ export default function Cart({ items, onUpdateQuantity, onRemove, onClear, onChe
                   </p>
                 </div>
                 
+                {/* --- QUANTITY CONTROLS --- */}
+                {/* Plus/Minus buttons to modify item quantity. Subtracting below 1 removes the item. */}
                 <div className="flex items-center justify-between mt-2">
                   <div className="flex items-center gap-1.5">
                     <button 
@@ -74,7 +84,7 @@ export default function Cart({ items, onUpdateQuantity, onRemove, onClear, onChe
                     >
                       <MinusIcon className="h-3.5 w-3.5" />
                     </button>
-                    <span className="w-6 text-center text-xs font-bold text-slate-700 dark:text-slate-300">
+                    <span className="w-6 text-center text-xs font-bold text-slate-700 dark:text-slate-500 dark:text-slate-300">
                       {item.quantity}
                     </span>
                     <button 
@@ -98,14 +108,15 @@ export default function Cart({ items, onUpdateQuantity, onRemove, onClear, onChe
         )}
       </div>
 
-      {/* Summary Container */}
+      {/* --- SUMMARY & CHECKOUT CONTAINER --- */}
+      {/* Fixed bottom area showing financial breakdown and payment buttons */}
       <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-t border-slate-100 dark:border-slate-800">
         <div className="space-y-2.5 mb-6 text-sm">
-          <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
+          <div className="flex justify-between items-center text-slate-500 dark:text-slate-500 dark:text-slate-400">
             <span>Subtotal</span>
             <span className="font-semibold text-slate-700 dark:text-slate-200">{formatPrice(subtotal)}</span>
           </div>
-          <div className="flex justify-between items-center text-slate-500 dark:text-slate-400">
+          <div className="flex justify-between items-center text-slate-500 dark:text-slate-500 dark:text-slate-400">
             <span>Tax (5.0%)</span>
             <span className="font-semibold text-slate-700 dark:text-slate-200">{formatPrice(taxAmount)}</span>
           </div>
@@ -117,7 +128,8 @@ export default function Cart({ items, onUpdateQuantity, onRemove, onClear, onChe
           </div>
         </div>
 
-        {/* Action Buttons */}
+        {/* --- ACTION BUTTONS --- */}
+        {/* Fast checkout assumes cash directly, while 'Other Payment Options' opens a detailed modal */}
         <div className="space-y-3">
           <button 
             onClick={() => onFastCheckout(total)}

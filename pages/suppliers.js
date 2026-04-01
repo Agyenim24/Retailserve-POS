@@ -5,10 +5,16 @@ import { BuildingOfficeIcon, PlusIcon, MagnifyingGlassIcon, PencilSquareIcon, Tr
 import toast from 'react-hot-toast';
 
 export default function Suppliers() {
+  // --- STATE ---
+  // The raw JSON array of supplier records
   const [suppliers, setSuppliers] = useState([]);
+  // Input from the user to filter the list visually
   const [search, setSearch] = useState('');
+  // Controls visibility of the New/Edit supplier modal window
   const [isFormOpen, setIsFormOpen] = useState(false);
+  // Holds the Supplier's Postgres ID ONLY when in "Edit" mode
   const [editingId, setEditingId] = useState(null);
+  // A single object securely holding what the user types into the input fields
   const [formData, setFormData] = useState({
     name: '',
     contact_person: '',
@@ -17,6 +23,8 @@ export default function Suppliers() {
     address: ''
   });
 
+  // --- BACKEND CONNECTION ---
+  // Reusable function to ask the API for the latest supplier database
   const fetchSuppliers = async () => {
     try {
       const res = await fetch('/api/suppliers');
@@ -31,8 +39,10 @@ export default function Suppliers() {
     fetchSuppliers();
   }, []);
 
+  // Form Submission Logic
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // PUT is used to modify, POST is used to create
     const method = editingId ? 'PUT' : 'POST';
     const url = editingId ? `/api/suppliers/${editingId}` : '/api/suppliers';
 
@@ -40,11 +50,13 @@ export default function Suppliers() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData) // Send the typed input data to the server
       });
       if (!res.ok) throw new Error('Action failed');
       
       toast.success(`Supplier ${editingId ? 'updated' : 'added'}`);
+      
+      // Reset Modal and Form state gracefully
       setIsFormOpen(false);
       setEditingId(null);
       setFormData({ name: '', contact_person: '', email: '', phone: '', address: '' });
@@ -54,7 +66,9 @@ export default function Suppliers() {
     }
   };
 
+  // Prep form for editing a specific row
   const handleEdit = (supplier) => {
+    // Pre-fill the inputs with existing database records
     setFormData({
       name: supplier.name,
       contact_person: supplier.contact_person || '',
@@ -62,8 +76,8 @@ export default function Suppliers() {
       phone: supplier.phone || '',
       address: supplier.address || ''
     });
-    setEditingId(supplier.id);
-    setIsFormOpen(true);
+    setEditingId(supplier.id); // Flag that we are editing
+    setIsFormOpen(true);       // Reveal the modal
   };
 
   const handleDelete = async (id) => {
@@ -78,6 +92,7 @@ export default function Suppliers() {
     }
   };
 
+  // Run the filter algorithm on the client side so it instantly responds to typing
   const filteredSuppliers = suppliers.filter(s => 
     s.name.toLowerCase().includes(search.toLowerCase()) || 
     s.contact_person?.toLowerCase().includes(search.toLowerCase())
@@ -89,7 +104,7 @@ export default function Suppliers() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white leading-tight">Supplier Directory</h1>
-            <p className="text-slate-400 dark:text-slate-400 mt-1">Manage product vendors and contact details</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage product vendors and contact details</p>
           </div>
           <button 
             onClick={() => {
@@ -121,8 +136,8 @@ export default function Suppliers() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-              <thead className="bg-surface-card text-xs uppercase text-slate-400 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
+            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-500 dark:text-slate-300">
+              <thead className="bg-surface-card text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Vendor Name</th>
                   <th className="px-6 py-4 font-semibold">Contact Person</th>
@@ -137,7 +152,7 @@ export default function Suppliers() {
                       <div className="font-bold text-slate-900 dark:text-white">{s.name}</div>
                       <div className="text-[10px] text-slate-500 uppercase tracking-tighter mt-0.5">{s.address || 'No address set'}</div>
                     </td>
-                    <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-300">{s.contact_person || '-'}</td>
+                    <td className="px-6 py-4 font-medium text-slate-600 dark:text-slate-500 dark:text-slate-300">{s.contact_person || '-'}</td>
                     <td className="px-6 py-4">
                       <div className="text-sm">{s.email || '-'}</div>
                       <div className="text-xs text-slate-400 mt-0.5">{s.phone || '-'}</div>
@@ -156,7 +171,7 @@ export default function Suppliers() {
                 ))}
                 {filteredSuppliers.length === 0 && (
                   <tr>
-                    <td colSpan="4" className="px-6 py-12 text-center text-slate-400">No suppliers found.</td>
+                    <td colSpan="4" className="px-6 py-12 text-center text-slate-500 dark:text-slate-400">No suppliers found.</td>
                   </tr>
                 )}
               </tbody>

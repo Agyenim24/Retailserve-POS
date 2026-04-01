@@ -48,7 +48,7 @@ export default function SalesChart({ data }) {
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
-            margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
+            margin={{ top: 10, right: 10, left: 30, bottom: 10 }}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
             <XAxis 

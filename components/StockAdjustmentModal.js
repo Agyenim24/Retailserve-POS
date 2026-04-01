@@ -30,7 +30,7 @@ export default function StockAdjustmentModal({ products, suppliers = [], isOpen,
             <ArrowPathIcon className="h-5 w-5 text-primary-400" />
             Adjust Stock
           </h2>
-          <button onClick={onClose} className="text-slate-400 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors">
+          <button onClick={onClose} className="text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:text-white transition-colors">
             <XMarkIcon className="h-6 w-6" />
           </button>
         </div>

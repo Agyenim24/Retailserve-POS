@@ -4,9 +4,14 @@ import { PlusIcon } from '@heroicons/react/24/solid';
 import { useCurrency } from '../lib/CurrencyContext';
 
 export default function ProductSearch({ onAddProduct, products }) {
+  // --- STATE ---
+  // Access global currency formatting
   const { formatPrice } = useCurrency();
+  // Stores the user's current search input (text or partial barcode)
   const [query, setQuery] = useState('');
 
+  // --- SEARCH & BARCODE HANDLER ---
+  // Fires every time the input changes
   const handleSearch = (e) => {
     const val = e.target.value;
     setQuery(val);
@@ -21,6 +26,9 @@ export default function ProductSearch({ onAddProduct, products }) {
     }
   };
 
+  // --- FILTERING LOGIC ---
+  // Filter the available products (passed down from the parent POS page)
+  // checks either the product name or its exact barcode
   const filteredProducts = products.filter(p => 
     p.name.toLowerCase().includes(query.toLowerCase()) || 
     p.barcode?.includes(query)
@@ -44,6 +52,8 @@ export default function ProductSearch({ onAddProduct, products }) {
         </div>
       </div>
 
+      {/* --- PRODUCT GRID --- */}
+      {/* Scrollable grid showing filtered products as clickable cards */}
       <div className="flex-1 overflow-y-auto p-6 pt-4 custom-scrollbar">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {filteredProducts.map(product => (
@@ -51,7 +61,8 @@ export default function ProductSearch({ onAddProduct, products }) {
               key={product.id}
               className="group relative bg-gradient-to-b from-white to-slate-50/50 dark:from-slate-800/40 dark:to-slate-900/40 rounded-[2rem] overflow-hidden border border-slate-100/80 dark:border-slate-800/50 shadow-sm hover:shadow-2xl hover:shadow-primary-900/10 cursor-default transition-all duration-500 ease-out transform hover:-translate-y-2"
             >
-              {/* Image section with fallback */}
+              {/* --- PRODUCT IMAGE --- */}
+              {/* Image section with a resilient fallback if no image URL is provided */}
               <div className="h-40 sm:h-52 bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
                 {product.image ? (
                   <img 
@@ -77,6 +88,7 @@ export default function ProductSearch({ onAddProduct, products }) {
                 </div>
               </div>
 
+              {/* --- PRODUCT INFO & ADD TO CART --- */}
               <div className="p-6">
                 <div className="flex flex-col h-full justify-between">
                   <div className="mb-4">

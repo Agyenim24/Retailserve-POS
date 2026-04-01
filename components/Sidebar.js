@@ -26,7 +26,7 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: 'Suppliers', href: '/suppliers', icon: BuildingOfficeIcon, roles: ['ADMIN', 'MANAGER'] },
     { name: 'Customers', href: '/customers', icon: UsersIcon, roles: ['ADMIN', 'MANAGER', 'CASHIER'] },
     { name: 'Reports', href: '/reports', icon: ChartBarIcon, roles: ['ADMIN', 'MANAGER'] },
-    { name: 'Users', href: '/users', icon: UsersIcon, roles: ['ADMIN', 'MANAGER'] },
+    { name: 'Users', href: '/users', icon: UsersIcon, roles: ['ADMIN'] },
     { name: 'Settings', href: '/settings', icon: InboxStackIcon, roles: ['ADMIN'] },
   ];
 

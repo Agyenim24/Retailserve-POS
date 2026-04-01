@@ -7,39 +7,56 @@ import toast from 'react-hot-toast';
 import CustomerHistoryModal from '../components/CustomerHistoryModal';
 
 export default function Customers() {
+  // --- STATE ---
+  // The raw list of customers pulled from the database
   const [customers, setCustomers] = useState([]);
+  // What the user is currently typing in the search bar
   const [search, setSearch] = useState('');
+  // Controls if the "Add Customer" modal popup is showing
   const [isFormOpen, setIsFormOpen] = useState(false);
+  // Controls if the "Customer Purchase History" modal popup is showing
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  // Keeps track of WHICH customer to show history for
   const [selectedCustomerForHistory, setSelectedCustomerForHistory] = useState(null);
+  // Temporary state to hold the 'New Customer' form inputs
   const [formData, setFormData] = useState({ name: '', email: '', phone: '' });
 
+  // --- DATA FETCHING ---
+  // Reusable function to hit the backend API and get customers
   const fetchCustomers = () => {
+    // We attach the 'search' state to the URL. The backend uses this to filter Postgres.
     fetch(`/api/customers?search=${search}`)
       .then(res => res.json())
       .then(data => setCustomers(data))
       .catch(() => toast.error('Failed to load customers'));
   };
 
+  // This runs when the component loads AND automatically re-runs every time `search` changes
   useEffect(() => {
     fetchCustomers();
   }, [search]);
 
+  // --- CREATE CUSTOMER ---
+  // Runs when user clicks "Save Member" in the popup modal
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // POST the formData to the backend API route
       const res = await fetch('/api/customers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
       const data = await res.json();
+      
+      // If the backend returns an error (e.g., duplicated email)
       if (!res.ok) throw new Error(data.error || 'Failed to create');
       
+      // On success:
       toast.success('Customer added');
-      setIsFormOpen(false);
-      setFormData({ name: '', email: '', phone: '' });
-      fetchCustomers();
+      setIsFormOpen(false); // Close modal
+      setFormData({ name: '', email: '', phone: '' }); // Reset Inputs
+      fetchCustomers(); // Refresh the list
     } catch (error) {
       toast.error(error.message);
     }
@@ -51,7 +68,7 @@ export default function Customers() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white leading-tight">Customer Directory</h1>
-            <p className="text-slate-400 dark:text-slate-400 mt-1">Manage loyalty members and details</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage loyalty members and details</p>
           </div>
           <button onClick={() => setIsFormOpen(true)} className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2">
             <UserPlusIcon className="h-5 w-5" />
@@ -76,8 +93,8 @@ export default function Customers() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-              <thead className="bg-surface-card text-xs uppercase text-slate-400 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
+            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-500 dark:text-slate-300">
+              <thead className="bg-surface-card text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Name</th>
                   <th className="px-6 py-4 font-semibold">Contact</th>

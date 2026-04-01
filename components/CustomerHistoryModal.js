@@ -30,7 +30,7 @@ export default function CustomerHistoryModal({ customer, isOpen, onClose }) {
             <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">{customer.name} (ID: {customer.id})</p>
           </div>
           <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-full transition-colors">
-            <XMarkIcon className="h-6 w-6 text-slate-400" />
+            <XMarkIcon className="h-6 w-6 text-slate-500 dark:text-slate-400" />
           </button>
         </div>
 
@@ -58,7 +58,7 @@ export default function CustomerHistoryModal({ customer, isOpen, onClose }) {
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-sm">
                   <div className="text-[10px] uppercase font-black tracking-widest text-slate-400 mb-1">Last Visit</div>
-                  <div className="text-xs font-black text-slate-700 dark:text-slate-300">
+                  <div className="text-xs font-black text-slate-700 dark:text-slate-500 dark:text-slate-300">
                     {new Date(history[0].createdAt).toLocaleDateString()}
                   </div>
                 </div>
@@ -90,16 +90,16 @@ export default function CustomerHistoryModal({ customer, isOpen, onClose }) {
                       <table className="w-full text-left text-xs">
                         <thead>
                           <tr className="border-b border-slate-200 dark:border-slate-700/50">
-                            <th className="px-4 py-3 font-black uppercase text-slate-400">Item</th>
-                            <th className="px-4 py-3 text-center font-black uppercase text-slate-400">Qty</th>
-                            <th className="px-4 py-3 text-right font-black uppercase text-slate-400">Price</th>
+                            <th className="px-4 py-3 font-black uppercase text-slate-500 dark:text-slate-400">Item</th>
+                            <th className="px-4 py-3 text-center font-black uppercase text-slate-500 dark:text-slate-400">Qty</th>
+                            <th className="px-4 py-3 text-right font-black uppercase text-slate-500 dark:text-slate-400">Price</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-200/50 dark:divide-slate-700/50">
                           {sale.items.map((item, idx) => (
                             <tr key={idx} className="group/row">
                               <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">{item.productName}</td>
-                              <td className="px-4 py-3 text-center font-bold text-slate-600 dark:text-slate-400">{item.quantity}</td>
+                              <td className="px-4 py-3 text-center font-bold text-slate-600 dark:text-slate-500 dark:text-slate-400">{item.quantity}</td>
                               <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-white">{formatPrice(item.unitPrice)}</td>
                             </tr>
                           ))}

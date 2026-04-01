@@ -9,21 +9,32 @@ import toast from 'react-hot-toast';
 import { useCurrency } from '../lib/CurrencyContext';
 
 export default function Reports() {
+  // --- CONTEXT & STATE ---
+  // Retrieves the dynamically selected currency symbol (USD or GHS)
   const { formatPrice } = useCurrency();
+  // Holds the high-level daily overview numbers (e.g. today's total revenue)
   const [reportData, setReportData] = useState(null);
+  // Holds the array of 7-day data used by the SalesChart graph
   const [weeklyData, setWeeklyData] = useState([]);
+  // Holds every single transaction ever made (or for the selected date)
   const [salesHistory, setSalesHistory] = useState([]);
+  // Controls the loading spinner
   const [loading, setLoading] = useState(true);
-  const [dateFilter, setDateFilter] = useState(''); // YYYY-MM-DD
+  // Optional date string (YYYY-MM-DD) to filter all data below to a specific day
+  const [dateFilter, setDateFilter] = useState('');
 
+  // --- DATA FETCHING ---
   const fetchData = async () => {
     setLoading(true);
     try {
+      // If the user selected a date, we append ?date=YYYY-MM-DD to the API request
       const urlParams = dateFilter ? `?date=${dateFilter}` : '';
+      
+      // Fetch the 3 completely different datasets at the exact same time
       const [resReports, resWeekly, resSales] = await Promise.all([
-        fetch(`/api/reports${urlParams}`),
-        fetch('/api/reports/weekly'),
-        fetch(`/api/sales${urlParams}`)
+        fetch(`/api/reports${urlParams}`), // Overall totals and leaderboards
+        fetch('/api/reports/weekly'),      // The graph data (always 7 trailing days)
+        fetch(`/api/sales${urlParams}`)    // The raw historical receipts
       ]);
 
       if (resReports.ok && resWeekly.ok && resSales.ok) {
@@ -40,6 +51,7 @@ export default function Reports() {
     }
   };
 
+  // Triggers the fetch automatically on first load, OR whenever the user picks a new date
   useEffect(() => {
     fetchData();
   }, [dateFilter]);
@@ -60,7 +72,7 @@ export default function Reports() {
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center mb-6 gap-4">
           <div>
             <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight">Reports & Analytics</h1>
-            <p className="text-sm sm:text-base text-slate-400 dark:text-slate-400 mt-1">Detailed performance and sales history</p>
+            <p className="text-sm sm:text-base text-slate-500 dark:text-slate-400 mt-1">Detailed performance and sales history</p>
           </div>
           
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-3 bg-slate-50 dark:bg-slate-800/40 p-2 rounded-xl border border-slate-200 dark:border-slate-700 w-full lg:w-auto shadow-sm">
@@ -112,7 +124,7 @@ export default function Reports() {
                       </div>
                       <div>
                         <div className="font-medium text-slate-900 dark:text-white">{p.productName}</div>
-                        <div className="text-xs text-slate-400">{p.totalQty} units sold</div>
+                        <div className="text-xs text-slate-500 dark:text-slate-400">{p.totalQty} units sold</div>
                       </div>
                     </div>
                     <div className="text-sm font-bold text-slate-900 dark:text-white">
@@ -135,7 +147,7 @@ export default function Reports() {
                   <div key={c.cashierId} className="flex items-center justify-between">
                     <div>
                       <div className="font-medium text-slate-900 dark:text-white">{c.cashierName}</div>
-                      <div className="text-xs text-slate-400">{c.totalSales} transactions</div>
+                      <div className="text-xs text-slate-500 dark:text-slate-400">{c.totalSales} transactions</div>
                     </div>
                     <div className="text-sm font-bold text-emerald-500">
                       {formatPrice(c.totalRevenue)}
@@ -178,8 +190,8 @@ export default function Reports() {
           </div>
 
           <div className="max-h-[500px] overflow-y-auto">
-            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-              <thead className="bg-surface-card text-xs uppercase text-slate-400 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 sticky top-0 z-10">
+            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-500 dark:text-slate-300">
+              <thead className="bg-surface-card text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50 sticky top-0 z-10">
                 <tr>
                   <th className="px-6 py-4 font-semibold">TID / Date</th>
                   <th className="px-6 py-4 font-semibold">Cashier</th>

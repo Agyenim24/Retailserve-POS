@@ -7,20 +7,29 @@ import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outl
 import toast from 'react-hot-toast';
 
 export default function Inventory() {
+  // --- STATE MANAGEMENT ---
+  // Stores the history of stock changes (Audit logs)
   const [logs, setLogs] = useState([]);
+  // Stores the master list of all products in the database
   const [products, setProducts] = useState([]);
+  // Stores the list of external suppliers
   const [suppliers, setSuppliers] = useState([]);
+  // Stores products that have quantities below their lowStockThreshold
   const [lowStock, setLowStock] = useState([]);
+  // Controls the visibility of the "Adjust Stock" modal
   const [isAdjustOpen, setIsAdjustOpen] = useState(false);
 
+  // --- DATA FETCHING ---
+  // A single function that fetches all necessary inventory data in parallel making the page load faster
   const fetchData = async () => {
     try {
       const [logsRes, prodRes, lowRes, supRes] = await Promise.all([
-        fetch('/api/inventory'),
-        fetch('/api/products'),
-        fetch('/api/inventory/low-stock'),
-        fetch('/api/suppliers')
+        fetch('/api/inventory'),         // GET recent audit logs
+        fetch('/api/products'),          // GET all products for the dropdown
+        fetch('/api/inventory/low-stock'), // GET low stock alerts
+        fetch('/api/suppliers')          // GET suppliers for when we restock
       ]);
+      // Update state with the exact json data returned from each API Route
       setLogs(await logsRes.json());
       setProducts(await prodRes.json());
       setLowStock(await lowRes.json());
@@ -30,20 +39,27 @@ export default function Inventory() {
     }
   };
 
+  // Run the massive multi-fetch automatically exactly once when the page loads
   useEffect(() => {
     fetchData();
   }, []);
 
+  // --- INVENTORY MODIFICATION ---
+  // Triggered when a Manager submits a manual 'Restock' or 'Damage' adjustment through the modal
   const handleAdjustment = async (data) => {
     try {
+      // POST the adjustment details securely to the backend
       const res = await fetch('/api/inventory', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data)
       });
       const result = await res.json();
+      
+      // Error handling from the backend (e.g., trying to remove more stock than exists)
       if (!res.ok) throw new Error(result.error);
       
+      // On success: notify user, close modal, and refresh all inventory tables instantly
       toast.success('Stock adjusted successfully');
       setIsAdjustOpen(false);
       fetchData();
@@ -58,7 +74,7 @@ export default function Inventory() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white leading-tight">Inventory Control</h1>
-            <p className="text-slate-400 dark:text-slate-400 mt-1">Manage stock levels and history</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage stock levels and history</p>
           </div>
           <button onClick={() => setIsAdjustOpen(true)} className="btn-primary w-full sm:w-auto flex items-center justify-center gap-2">
             <ArrowPathIcon className="h-5 w-5" />
@@ -90,8 +106,8 @@ export default function Inventory() {
             <h3 className="text-lg font-bold text-slate-900 dark:text-white">Recent Activity</h3>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-300">
-              <thead className="bg-surface-card text-xs uppercase text-slate-400 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
+            <table className="w-full text-left text-sm text-slate-700 dark:text-slate-500 dark:text-slate-300">
+              <thead className="bg-surface-card text-xs uppercase text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/50">
                 <tr>
                   <th className="px-6 py-4 font-semibold">Date</th>
                   <th className="px-6 py-4 font-semibold">Product</th>
@@ -103,7 +119,7 @@ export default function Inventory() {
               <tbody className="divide-y divide-slate-700/50">
                 {logs.map((log) => (
                   <tr key={log.id} className="hover:bg-surface-elevated/50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-400 dark:text-slate-400">
+                    <td className="px-6 py-4 whitespace-nowrap text-xs text-slate-500 dark:text-slate-500 dark:text-slate-400">
                       {new Date(log.createdAt).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 font-medium text-slate-900 dark:text-white">{log.productName}</td>

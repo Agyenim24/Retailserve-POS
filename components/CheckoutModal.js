@@ -12,13 +12,25 @@ import toast from 'react-hot-toast';
 import { useCurrency } from '../lib/CurrencyContext';
 
 export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selectedCustomer }) {
+  // --- CONTEXT & CONVERSIONS ---
   const { formatPrice, currency } = useCurrency();
+  
+  // --- MODAL STATE ---
+  // Tracks whether the user is splitting the bill among multiple payment methods
   const [isSplit, setIsSplit] = useState(false);
+  // An array of active payments. Starts with one CASH payment empty.
   const [payments, setPayments] = useState([{ method: 'CASH', amount: '' }]);
+  // Which payment input is currently selected (used by the on-screen numeric keypad)
   const [activePaymentIndex, setActivePaymentIndex] = useState(0);
+  
+  // --- LOYALTY POINTS STATE ---
+  // How many points the user has chosen to redeem on this order
   const [pointsToRedeem, setPointsToRedeem] = useState(0);
 
+  // --- CALCULATIONS ---
+  // 100 points = 1 unit of currency ($1 or 1 GHC)
   const pointsDiscount = useMemo(() => pointsToRedeem / 100, [pointsToRedeem]);
+  // The new total the customer actually has to pay after spending points
   const discountedTotal = Math.max(0, total - pointsDiscount);
 
   useEffect(() => {
@@ -30,13 +42,20 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
     }
   }, [isOpen]);
 
+  // Total cash/card amount they've currently keyed in
   const totalPaid = useMemo(() => {
     return payments.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
   }, [payments]);
 
+  // How much more they need to key in to complete the sale
   const remaining = Math.max(0, discountedTotal - totalPaid);
+  // Any overpayment (cash change to give back to customer)
   const change = Math.max(0, totalPaid - discountedTotal);
-  const isFullyPaid = totalPaid >= discountedTotal - 0.001; // Handle float precision
+  // Is the bill fully covered? We use 0.001 to avoid JS floating point math bugs (e.g. 10.000000000000002 >= 10)
+  const isFullyPaid = totalPaid >= discountedTotal - 0.001;
+
+  // --- PAYMENT HANDLERS ---
+  // Changes the method (CASH, CARD, MOBILE_MONEY) of a specific payment block
 
   const handleMethodChange = (index, method) => {
     const newPayments = [...payments];
@@ -56,6 +75,7 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
     setActivePaymentIndex(payments.length);
   };
 
+  // Reverts back to a single payment block if the user cancels a split
   const removePaymentMethod = (index) => {
     if (payments.length <= 1) return;
     const newPayments = payments.filter((_, i) => i !== index);
@@ -63,6 +83,8 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
     setActivePaymentIndex(Math.max(0, index - 1));
   };
 
+  // --- FINAL CONFIRMATION ---
+  // Submits the finalized details back to pos.js to process the backend database insert
   const handleConfirm = () => {
     if (!isFullyPaid) return;
     
@@ -78,9 +100,13 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
     });
   };
 
+  // --- ON-SCREEN KEYPAD HANDLERS ---
+  // Processes physical clicks on the modal's numeric keypad
   const appendDigit = (digit) => {
     const currentAmount = payments[activePaymentIndex].amount.toString();
+    // Prevent multiple decimals
     if (digit === '.' && currentAmount.includes('.')) return;
+    
     if (digit === 'BACK') {
       handleAmountChange(activePaymentIndex, currentAmount.slice(0, -1));
     } else {
@@ -98,7 +124,8 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-300 p-4">
       <div className="w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl overflow-hidden flex flex-col lg:flex-row max-h-[95vh] sm:max-h-[90vh]">
         
-        {/* Left Side: Payment Details */}
+        {/* --- LEFT SIDE: PAYMENT DETAILS & LOYALTY --- */}
+        {/* Shows the total due, loyalty slider, and dynamic payment method blocks */}
         <div className="flex-1 flex flex-col border-r border-slate-100 dark:border-slate-800">
           <div className="p-6 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
             <div>
@@ -106,7 +133,7 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
               <p className="text-xs text-slate-500 font-bold uppercase tracking-widest mt-1">Select Payment Methods</p>
             </div>
             <button onClick={onClose} className="p-2 hover:bg-white dark:hover:bg-slate-700 rounded-full transition-colors">
-              <XMarkIcon className="h-6 w-6 text-slate-400" />
+              <XMarkIcon className="h-6 w-6 text-slate-500 dark:text-slate-400" />
             </button>
           </div>
 
@@ -260,7 +287,8 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
           </div>
         </div>
 
-        {/* Right Side: Keypad */}
+        {/* --- RIGHT SIDE: ON-SCREEN NUMERIC KEYPAD --- */}
+        {/* Optimized for touch-screen POS terminals to enter exact change rapidly */}
         <div className="w-full lg:w-[360px] bg-slate-50 dark:bg-slate-800/20 p-4 sm:p-6 flex flex-col justify-between overflow-y-auto lg:overflow-visible">
           <div>
             <div className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Quick Actions</div>

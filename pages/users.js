@@ -8,12 +8,19 @@ import toast from 'react-hot-toast';
 import UserModal from '../components/UserModal';
 
 export default function Users() {
+  // --- SESSION & STATE ---
+  // Requires NextAuth session to verify who is attempting to modify users
   const { data: session } = useSession();
+  
+  // Array of all authenticated users allowed to access this POS
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Modal visibility switch
   const [isModalOpen, setIsModalOpen] = useState(false);
+  // Which user is currently being edited
   const [editingUser, setEditingUser] = useState(null);
 
+  // --- API COMMUNICATION ---
   const fetchUsers = async () => {
     try {
       const res = await fetch('/api/users');
@@ -22,10 +29,12 @@ export default function Users() {
     } catch (e) {
       toast.error('Failed to load users');
     } finally {
+      // Regardless of failure or success, stop the loading state
       setLoading(false);
     }
   };
 
+  // Triggered when submitting the user Add/Edit Modal Form
   const handleSave = async (formData) => {
     try {
       const method = editingUser ? 'PUT' : 'POST';
@@ -60,7 +69,9 @@ export default function Users() {
 
   useEffect(() => { fetchUsers(); }, []);
 
+  // Role-Based Access Control logic for deleting
   const handleDelete = async (user) => {
+    // Hard-coded protection rule: Managers cannot strip permissions from the business owner (ADMIN)
     if (user.role === 'ADMIN' && session.user.role === 'MANAGER') {
       toast.error('Managers cannot delete Admin users.');
       return;
@@ -88,7 +99,7 @@ export default function Users() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white leading-tight">User Management</h1>
-            <p className="text-slate-400 dark:text-slate-400 mt-1">Manage system access and roles</p>
+            <p className="text-slate-500 dark:text-slate-400 mt-1">Manage system access and roles</p>
           </div>
           {session?.user?.role === 'ADMIN' && (
             <button 
@@ -122,7 +133,7 @@ export default function Users() {
                         </div>
                         <div>
                           <p className="font-semibold text-slate-900 dark:text-white">{user.name}</p>
-                          <p className="text-xs text-slate-400">{user.email}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400">{user.email}</p>
                         </div>
                       </div>
                     </td>
@@ -130,13 +141,13 @@ export default function Users() {
                       <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                         user.role === 'ADMIN' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/20 dark:text-purple-400' :
                         user.role === 'MANAGER' ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400' :
-                        'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400'
+                        'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-500 dark:text-slate-400'
                       }`}>
                         {user.role === 'ADMIN' && <ShieldCheckIcon className="h-3 w-3" />}
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-slate-400">
+                    <td className="px-6 py-4 text-slate-500 dark:text-slate-400">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-4 text-right">
