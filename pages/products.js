@@ -140,7 +140,7 @@ export default function Products() {
                     <td className="px-6 py-4">
                       <span className="badge-blue capitalize">{product.category}</span>
                     </td>
-                    <td className="px-6 py-4 text-right font-medium text-emerald-400">
+                    <td className="px-6 py-4 text-right font-bold text-emerald-600 dark:text-emerald-400">
                       {formatPrice(product.price)}
                     </td>
                     <td className="px-6 py-4 text-right">
