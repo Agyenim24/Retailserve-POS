@@ -9,6 +9,8 @@ export default function ProductSearch({ onAddProduct, products }) {
   const { formatPrice } = useCurrency();
   // Stores the user's current search input (text or partial barcode)
   const [query, setQuery] = useState('');
+  // Stores the currently selected category filter
+  const [selectedCategory, setSelectedCategory] = useState('All');
 
   // --- SEARCH & BARCODE HANDLER ---
   // Fires every time the input changes
@@ -26,13 +28,12 @@ export default function ProductSearch({ onAddProduct, products }) {
     }
   };
 
-  // --- FILTERING LOGIC ---
-  // Filter the available products (passed down from the parent POS page)
-  // checks either the product name or its exact barcode
-  const filteredProducts = products.filter(p => 
-    p.name.toLowerCase().includes(query.toLowerCase()) || 
-    p.barcode?.includes(query)
-  );
+  // Filter the available products
+  const filteredProducts = products.filter(p => {
+    const matchesQuery = p.name.toLowerCase().includes(query.toLowerCase()) || p.barcode?.includes(query);
+    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+    return matchesQuery && matchesCategory;
+  });
 
   return (
     <div className="card p-0 overflow-hidden h-full flex flex-col border-none shadow-2xl bg-surface-card/50 backdrop-blur-sm">
@@ -50,12 +51,29 @@ export default function ProductSearch({ onAddProduct, products }) {
             autoFocus
           />
         </div>
+
+        {/* Category Filters */}
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-2 custom-scrollbar">
+          {['All', ...new Set(products.map(p => p.category).filter(Boolean))].map(category => (
+            <button
+              key={category}
+              onClick={() => setSelectedCategory(category)}
+              className={`px-4 py-2 rounded-2xl text-sm font-bold whitespace-nowrap transition-all duration-300 ${
+                selectedCategory === category
+                  ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 hover:scale-105'
+              }`}
+            >
+              {category === 'All' ? 'All Products' : category}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* --- PRODUCT GRID --- */}
       {/* Scrollable grid showing filtered products as clickable cards */}
-      <div className="flex-1 overflow-y-auto p-6 pt-4 custom-scrollbar">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+      <div className="flex-1 overflow-y-auto p-4 pt-2 custom-scrollbar">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filteredProducts.map(product => (
             <div 
               key={product.id}
@@ -63,7 +81,7 @@ export default function ProductSearch({ onAddProduct, products }) {
             >
               {/* --- PRODUCT IMAGE --- */}
               {/* Image section with a resilient fallback if no image URL is provided */}
-              <div className="h-40 sm:h-52 bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
+              <div className="h-28 sm:h-36 bg-slate-100 dark:bg-slate-800 overflow-hidden relative">
                 {product.image ? (
                   <img 
                     src={product.image} 
@@ -89,14 +107,14 @@ export default function ProductSearch({ onAddProduct, products }) {
               </div>
 
               {/* --- PRODUCT INFO & ADD TO CART --- */}
-              <div className="p-6">
+              <div className="p-4">
                 <div className="flex flex-col h-full justify-between">
-                  <div className="mb-4">
+                  <div className="mb-2">
                     <span className="text-[10px] font-black text-primary-500 uppercase tracking-[0.2em]">{product.category}</span>
-                    <h4 className="mt-1 text-base font-bold text-slate-900 dark:text-white tracking-tight line-clamp-1 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+                    <h4 className="mt-0.5 text-sm font-bold text-slate-900 dark:text-white tracking-tight line-clamp-1 leading-snug group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                       {product.name}
                     </h4>
-                    <p className="text-xl font-black text-slate-900 dark:text-white tracking-tighter mt-1">{formatPrice(product.price)}</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white tracking-tighter mt-0.5">{formatPrice(product.price)}</p>
                   </div>
                   
                   <button 
@@ -105,13 +123,13 @@ export default function ProductSearch({ onAddProduct, products }) {
                       e.stopPropagation();
                       onAddProduct(product);
                     }}
-                    className={`flex items-center justify-center gap-2 w-full py-3.5 rounded-2xl text-sm font-black tracking-tight transition-all duration-300 shadow-lg transform ${
+                    className={`flex items-center justify-center gap-2 w-full py-2.5 rounded-xl text-xs font-black tracking-tight transition-all duration-300 shadow-lg transform ${
                       product.quantity > 0 
                         ? 'bg-primary-600 hover:bg-primary-700 text-white shadow-primary-900/20 hover:scale-[1.02] active:scale-95' 
                         : 'bg-slate-200 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
                     }`}
                   >
-                    <PlusIcon className="h-4 w-4 stroke-[3]" />
+                    <PlusIcon className="h-3.5 w-3.5 stroke-[3]" />
                     <span>Add to Order</span>
                   </button>
                 </div>

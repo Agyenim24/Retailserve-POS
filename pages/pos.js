@@ -181,9 +181,9 @@ export default function POS() {
   return (
     <ProtectedRoute allowedRoles={['ADMIN', 'MANAGER', 'CASHIER']}>
       <Layout title="Sales Terminal">
-        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:h-[calc(100vh-12rem)] mb-10 lg:mb-0">
+        <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:h-[calc(100vh-8rem)] mb-10 lg:mb-0">
           {/* Main Product Area */}
-          <div className="flex-[2] min-w-0 h-[65vh] sm:h-[60vh] lg:h-auto flex flex-col gap-4">
+          <div className="flex-[2] min-w-0 h-[75vh] sm:h-[70vh] lg:h-auto flex flex-col gap-4">
             <CustomerSelector 
               selectedCustomer={selectedCustomer} 
               onSelect={setSelectedCustomer} 
@@ -192,7 +192,7 @@ export default function POS() {
           </div>
 
           {/* Cart Sidebar */}
-          <div className="flex-1 min-w-0 lg:min-w-[320px] lg:max-w-[400px] h-[75vh] sm:h-[60vh] lg:h-auto">
+          <div className="flex-1 min-w-0 lg:min-w-[320px] lg:max-w-[400px] h-[85vh] sm:h-[70vh] lg:h-auto">
             <Cart 
               items={cartItems} 
               onUpdateQuantity={handleUpdateQuantity}

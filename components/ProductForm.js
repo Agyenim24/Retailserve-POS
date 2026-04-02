@@ -1,15 +1,61 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+
+const PREDEFINED_CATEGORIES = [
+  'Beverages',
+  'Snacks',
+  'Groceries',
+  'Dairy & Bakery',
+  'Meat & Seafood',
+  'Produce',
+  'Health & Beauty',
+  'Home & Cleaning',
+  'Electronics',
+  'Stationery',
+  'Clothing',
+  'Other'
+];
 
 export default function ProductForm({ product, isOpen, onClose, onSave }) {
   const [formData, setFormData] = useState({
-    name: product?.name || '',
-    category: product?.category || '',
-    price: product?.price || '',
-    quantity: product?.quantity || '',
-    barcode: product?.barcode || '',
-    lowStockThreshold: product?.lowStockThreshold || 10,
+    name: '',
+    category: '',
+    price: '',
+    quantity: '',
+    barcode: '',
+    lowStockThreshold: 10,
   });
+
+  const [isOtherCategory, setIsOtherCategory] = useState(false);
+  const [customCategory, setCustomCategory] = useState('');
+
+  // Update form data when product changes or when modal opens
+  useEffect(() => {
+    if (product) {
+      const isCustom = product.category && !PREDEFINED_CATEGORIES.includes(product.category);
+      setFormData({
+        name: product.name || '',
+        category: isCustom ? 'Other' : (product.category || ''),
+        price: product.price || '',
+        quantity: product.quantity || '',
+        barcode: product.barcode || '',
+        lowStockThreshold: product.lowStockThreshold || 10,
+      });
+      setIsOtherCategory(isCustom);
+      if (isCustom) setCustomCategory(product.category);
+    } else {
+      setFormData({
+        name: '',
+        category: '',
+        price: '',
+        quantity: '',
+        barcode: '',
+        lowStockThreshold: 10,
+      });
+      setIsOtherCategory(false);
+      setCustomCategory('');
+    }
+  }, [product, isOpen]);
 
   if (!isOpen) return null;
 
@@ -17,6 +63,7 @@ export default function ProductForm({ product, isOpen, onClose, onSave }) {
     e.preventDefault();
     onSave({
       ...formData,
+      category: isOtherCategory ? customCategory : formData.category,
       price: parseFloat(formData.price),
       quantity: parseInt(formData.quantity, 10),
       lowStockThreshold: parseInt(formData.lowStockThreshold, 10),
@@ -24,6 +71,13 @@ export default function ProductForm({ product, isOpen, onClose, onSave }) {
   };
 
   const handleChange = (e) => {
+    if (e.target.name === 'category') {
+      if (e.target.value === 'Other') {
+        setIsOtherCategory(true);
+      } else {
+        setIsOtherCategory(false);
+      }
+    }
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -46,15 +100,41 @@ export default function ProductForm({ product, isOpen, onClose, onSave }) {
               <input required name="name" type="text" value={formData.name} onChange={handleChange} className="input" placeholder="e.g. Coca-Cola 500ml" />
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Category</label>
-                <input required name="category" type="text" value={formData.category} onChange={handleChange} className="input" placeholder="e.g. Beverages" />
+                <select 
+                  required 
+                  name="category" 
+                  value={formData.category} 
+                  onChange={handleChange} 
+                  className="input cursor-pointer"
+                >
+                  <option value="" disabled>Select a category</option>
+                  {PREDEFINED_CATEGORIES.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                </select>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Barcode</label>
-                <input name="barcode" type="text" value={formData.barcode} onChange={handleChange} className="input" placeholder="Scan or type" />
-              </div>
+              
+              {isOtherCategory && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Custom Category Name</label>
+                  <input 
+                    required 
+                    type="text" 
+                    value={customCategory} 
+                    onChange={(e) => setCustomCategory(e.target.value)} 
+                    className="input" 
+                    placeholder="Enter custom category" 
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Barcode</label>
+              <input name="barcode" type="text" value={formData.barcode} onChange={handleChange} className="input" placeholder="Scan or type" />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
