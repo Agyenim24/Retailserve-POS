@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
+import { usePaystackPayment } from 'react-paystack';
+
 import { 
   CurrencyDollarIcon, 
   CreditCardIcon, 
@@ -22,6 +24,9 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
   const [payments, setPayments] = useState([{ method: 'CASH', amount: '' }]);
   // Which payment input is currently selected (used by the on-screen numeric keypad)
   const [activePaymentIndex, setActivePaymentIndex] = useState(0);
+  // Tracks if a payment is being verified on the backend
+  const [isProcessing, setIsProcessing] = useState(false);
+
   
   // --- LOYALTY POINTS STATE ---
   // How many points the user has chosen to redeem on this order
@@ -83,12 +88,63 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
     setActivePaymentIndex(Math.max(0, index - 1));
   };
 
+  // --- PAYSTACK INTEGRATION ---
+  const paystackConfig = {
+    reference: (new Date()).getTime().toString(),
+    email: selectedCustomer?.email || 'walk-in@retailserve.com',
+    amount: Math.round(discountedTotal * 100), // Subunits (e.g. Pesewas)
+    publicKey: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
+    currency: currency === 'GH₵' ? 'GHS' : 'USD'
+  };
+
+  const initializePaystack = usePaystackPayment(paystackConfig);
+
+  const handlePaystackSuccess = async (reference) => {
+    setIsProcessing(true);
+    try {
+      // 1. Verify on our backend
+      const res = await fetch('/api/paystack/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: reference.reference })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.verified) {
+        throw new Error(data.message || 'Payment verification failed');
+      }
+
+      // 2. Finalize sale
+      onConfirm({
+        method: 'PAYSTACK',
+        payments: [{ method: 'PAYSTACK', amount: discountedTotal, reference: reference.reference }],
+        totalPaid: discountedTotal,
+        pointsRedeemed: pointsToRedeem,
+        change: 0
+      });
+      
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
   // --- FINAL CONFIRMATION ---
+
   // Submits the finalized details back to pos.js to process the backend database insert
   const handleConfirm = () => {
     if (!isFullyPaid) return;
     
+    // If only one payment and it's Paystack, trigger the popup
+    if (payments.length === 1 && payments[0].method === 'PAYSTACK') {
+      initializePaystack(handlePaystackSuccess, () => toast.error('Payment cancelled'));
+      return;
+    }
+
     onConfirm({
+
       method: payments.length > 1 ? 'SPLIT' : payments[0].method,
       payments: payments.map(p => ({
         method: p.method,
@@ -211,8 +267,10 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
                           {[
                             { id: 'CASH', icon: CurrencyDollarIcon },
                             { id: 'CARD', icon: CreditCardIcon },
-                            { id: 'MOBILE_MONEY', icon: DevicePhoneMobileIcon }
+                            { id: 'MOBILE_MONEY', icon: DevicePhoneMobileIcon },
+                            { id: 'PAYSTACK', icon: CreditCardIcon }
                           ].map(m => (
+
                             <button
                               key={m.id}
                               onClick={(e) => { e.stopPropagation(); handleMethodChange(idx, m.id); }}
@@ -328,12 +386,13 @@ export default function CheckoutModal({ total, isOpen, onClose, onConfirm, selec
           </div>
 
           <button 
-            disabled={!isFullyPaid}
+            disabled={!isFullyPaid || isProcessing}
             onClick={handleConfirm}
             className="w-full py-5 rounded-2xl bg-slate-900 dark:bg-primary-600 text-white font-black uppercase tracking-widest shadow-2xl disabled:opacity-30 disabled:cursor-not-allowed transform active:scale-95 transition-all mt-8"
           >
-            Complete Sale
+            {isProcessing ? 'Verifying...' : 'Complete Sale'}
           </button>
+
         </div>
       </div>
     </div>
